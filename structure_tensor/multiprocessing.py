@@ -138,6 +138,16 @@ def _create_raw_array(shape: tuple[int, ...], dtype: npt.DTypeLike) -> tuple[Any
     return raw, a
 
 
+def _ensure_3tuple(value: Union[float, Sequence[float]]) -> tuple[float, float, float]:
+    """Convert a float or sequence of three floats to a 3-tuple."""
+    if isinstance(value, float) or isinstance(value, int):
+        return float(value), float(value), float(value)
+    elif isinstance(value, Sequence) and len(value) == 3:
+        return float(value[0]), float(value[1]), float(value[2])
+    else:
+        raise ValueError("Value must be a float or a sequence of three floats.")
+
+
 def parallel_structure_tensor_analysis(
     volume: np.ndarray,
     sigma: float,
@@ -251,6 +261,9 @@ def parallel_structure_tensor_analysis(
 
     assert eigenvectors_array is None or eigenvectors_shape == eigenvectors_array.shape
 
+    sigma = _ensure_3tuple(sigma)
+    rho = _ensure_3tuple(rho)
+    
     # Eigenvalue output.
     eigenvalues_shape = (3,) + volume.shape
     eigenvalues_array = None
@@ -394,7 +407,7 @@ def _do_work(block_id: int):
     block, pos, pad = util.get_block(
         block_id,
         _data_sources.data,
-        sigma=max(_worker_args.sigma, _worker_args.rho),
+        sigma=max(max(_worker_args.sigma), max(_worker_args.rho)),
         block_size=_worker_args.block_size,
         truncate=_worker_args.truncate,
         copy=False,
