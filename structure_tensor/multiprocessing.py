@@ -230,6 +230,9 @@ def parallel_structure_tensor_analysis(
     else:
         raise ValueError(f"Invalid type '{type(volume)}' for volume. Volume must be an 'numpy.ndarray'.")
 
+    sigma = _ensure_3tuple(sigma)
+    rho = _ensure_3tuple(rho)
+
     # Eigenvector output.
     if include_all_eigenvectors:
         eigenvectors_shape = (3, 3) + volume.shape
@@ -261,9 +264,6 @@ def parallel_structure_tensor_analysis(
 
     assert eigenvectors_array is None or eigenvectors_shape == eigenvectors_array.shape
 
-    sigma = _ensure_3tuple(sigma)
-    rho = _ensure_3tuple(rho)
-    
     # Eigenvalue output.
     eigenvalues_shape = (3,) + volume.shape
     eigenvalues_array = None
