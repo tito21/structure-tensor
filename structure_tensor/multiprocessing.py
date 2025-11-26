@@ -3,7 +3,7 @@
 import logging
 import os
 from dataclasses import dataclass
-from multiprocessing import Pool, RawArray, SimpleQueue, cpu_count
+from multiprocessing import Pool, RawArray, SimpleQueue, cpu_count, get_context
 from multiprocessing.pool import ThreadPool
 from typing import Any, Callable, Literal, Sequence, Union
 
@@ -350,7 +350,8 @@ def parallel_structure_tensor_analysis(
     results = []
     logger.info(f"Volume partitioned into {block_count} blocks.")
     pool_ctor = Pool if use_process_pool else ThreadPool
-    with pool_ctor(processes=len(devices), initializer=_init_worker, initargs=(init_args,)) as pool:
+    with get_context("fork").Pool(processes=len(devices), initializer=_init_worker, initargs=(init_args,)) as pool:
+    # with pool_ctor(processes=len(devices), initializer=_init_worker, initargs=(init_args,)) as pool:
         for res in pool.imap_unordered(
             _do_work,
             range(block_count),
